@@ -1,0 +1,10 @@
+sqlalchemy
+psycopg2-binary
+python-dotenv
+streamlit
+plotly
+pandas
+streamlit-mic-recorder
+pydub
+groq
+edge-tts
