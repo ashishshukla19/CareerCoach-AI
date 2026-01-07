@@ -10,7 +10,7 @@ import asyncio
 from app.core.config import InterviewMode
 from app.core.logger import logger
 from app.db.session import init_db
-from app.ui.state import init_state, set_interview_mode
+from app.ui.state import init_state, reset_state, set_interview_mode
 from app.ui.components import render_header, render_sidebar_controls, render_replay_section
 from app.ui.pages.interview_page import render_interview_page, render_welcome_page, render_mode_selection
 from app.ui.pages.dashboard_page import render_dashboard_page
@@ -40,8 +40,7 @@ action = render_sidebar_controls(
 )
 
 if action == "start":
-    # Show mode selection first
-    st.session_state.mode_selected = False
+    reset_state()
     st.rerun()
 elif action == "end":
     with st.spinner("Generating your detailed performance review..."):

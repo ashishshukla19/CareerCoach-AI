@@ -4,6 +4,7 @@ Modern, polished design with glassmorphism and professional styling.
 """
 import streamlit as st
 import asyncio
+import textwrap
 import os
 from streamlit_mic_recorder import mic_recorder
 from app.core.config import InterviewMode, DIFFICULTY_LABELS
@@ -333,83 +334,133 @@ def render_interview_page():
             st.markdown(f"<span style='color: {role_color}; font-weight: 600;'>{icon} {msg['role'].capitalize()}:</span> {msg['content']}", unsafe_allow_html=True)
 
 def render_welcome_page():
-    """Render the premium welcome page."""
-    st.markdown("""
-    <style>
-    .welcome-container {
-        text-align: center;
-        padding: 60px 20px;
-    }
-    .welcome-title {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-size: 3rem;
-        font-weight: 700;
-        margin-bottom: 20px;
-    }
-    .welcome-subtitle {
-        color: #a0aec0;
-        font-size: 1.3rem;
-        margin-bottom: 40px;
-    }
-    .feature-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    .feature-card {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
-        border: 1px solid rgba(99, 102, 241, 0.2);
-        border-radius: 16px;
-        padding: 25px;
-        text-align: center;
-    }
-    .feature-icon {
-        font-size: 2.5rem;
-        margin-bottom: 10px;
-    }
-    .feature-title {
-        color: #e2e8f0;
-        font-weight: 600;
-        margin-bottom: 8px;
-    }
-    .feature-desc {
-        color: #a0aec0;
-        font-size: 0.9rem;
-    }
-    </style>
+    """Render a premium welcome page using st.html for bulletproof rendering."""
     
-    <div class="welcome-container">
-        <h1 class="welcome-title">🎙️ AI Interview Coach</h1>
-        <p class="welcome-subtitle">Master your interview skills with AI-powered practice</p>
-        
-        <div class="feature-grid">
-            <div class="feature-card">
-                <div class="feature-icon">🎯</div>
-                <div class="feature-title">Realistic Interviews</div>
-                <div class="feature-desc">Technical or HR mode with adaptive AI</div>
+    # Define HTML separately with NO LEADING SPACES to avoid markdown issues
+    welcome_styles = """
+<style>
+@keyframes glowFade {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.welcome-container { 
+    animation: glowFade 0.8s ease-out;
+    max-width: 1100px; 
+    margin: 0 auto; 
+    text-align: center; 
+    padding: 20px; 
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.hero-box { 
+    background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), rgba(0,0,0,0) 50%),
+                rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(25px); 
+    border-radius: 48px; 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    padding: 80px 40px;
+    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.6);
+}
+
+.hero-title { 
+    font-size: 4.5rem; 
+    font-weight: 900; 
+    background: linear-gradient(135deg, #a5b4fc 0%, #c084fc 100%); 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; 
+    margin-bottom: 24px;
+    letter-spacing: -2px;
+}
+
+.hero-subtitle { 
+    font-size: 1.6rem; 
+    color: #94a3b8; 
+    margin-bottom: 60px;
+    font-weight: 400;
+}
+
+.feat-grid { 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 32px; 
+}
+
+.feat-card { 
+    background: rgba(255, 255, 255, 0.03); 
+    border: 1px solid rgba(255, 255, 255, 0.05); 
+    border-radius: 32px; 
+    padding: 35px; 
+    text-align: left;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.feat-card:hover {
+    transform: translateY(-12px);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(99, 102, 241, 0.5);
+    box-shadow: 0 20px 40px -10px rgba(99, 102, 241, 0.2);
+}
+
+.feat-icon { 
+    font-size: 3rem; 
+    margin-bottom: 24px; 
+    display: block;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
+}
+
+.feat-title { 
+    font-size: 1.7rem; 
+    font-weight: 700; 
+    color: #f8fafc; 
+    margin-bottom: 12px; 
+}
+
+.feat-desc { 
+    color: #cbd5e1; 
+    font-size: 1.1rem; 
+    line-height: 1.6; 
+}
+</style>
+"""
+    welcome_content = """
+<div class="welcome-container">
+    <div class="hero-box">
+        <h1 class="hero-title">AI Interview Coach</h1>
+        <p class="hero-subtitle">Master the art of high-stakes interviews with elite AI-powered vocal simulations.</p>
+        <div class="feat-grid">
+            <div class="feat-card">
+                <span class="feat-icon">🎯</span>
+                <div class="feat-title">FAANG Scenarios</div>
+                <p class="feat-desc">Practice with hyper-realistic challenges designed for world-class technical and leadership roles.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">📊</div>
-                <div class="feature-title">Difficulty Levels</div>
-                <div class="feature-desc">From Startup (1) to FAANG (10)</div>
+            <div class="feat-card">
+                <span class="feat-icon">🎙️</span>
+                <div class="feat-title">Vocal Analysis</div>
+                <p class="feat-desc">Uncover hidden verbal blindspots with instant metrics on pace, tone, and confidence.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">🎙️</div>
-                <div class="feature-title">Voice Interaction</div>
-                <div class="feature-desc">Speak naturally, get instant feedback</div>
+            <div class="feat-card">
+                <span class="feat-icon">📊</span>
+                <div class="feat-title">Precision Analytics</div>
+                <p class="feat-desc">Follow deep-learning feedback on filler words, fluency, and technical accuracy per turn.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">📈</div>
-                <div class="feature-title">Deep Analytics</div>
-                <div class="feature-desc">Track fillers, pace, and fluency</div>
+            <div class="feat-card">
+                <span class="feat-icon">📈</span>
+                <h3 class="feat-title">Adaptive Growth</h3>
+                <p class="feat-desc">Experience an evolving challenge that scales from early-career to executive intensity levels.</p>
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+</div>
+"""
+    # Use st.html for guaranteed rendering
+    st.html(welcome_styles + welcome_content)
+
+    # Use native Streamlit button for functionality
+    col1, col2, col3 = st.columns([1, 1.5, 1])
+    with col2:
+        if st.button("🚀 UNLOCK YOUR POTENTIAL", use_container_width=True, type="primary"):
+            st.session_state.mode_selected = False
+            st.rerun()
     
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    st.info("👆 Click **Start New Interview** in the sidebar to begin!")
+    st.info("💡 Pro-tip: Access previous sessions and analytics in the sidebar.")

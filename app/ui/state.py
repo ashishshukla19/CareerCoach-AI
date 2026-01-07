@@ -11,7 +11,7 @@ DEFAULTS = {
     "interview_active": False,
     "interview_mode": None,  # 'technical' or 'hr'
     "difficulty_level": 5,   # 1 (Startup) to 10 (FAANG)
-    "mode_selected": False,  # Whether user has chosen a mode
+    "mode_selected": True,   # Whether user has chosen a mode
     "review_data": None,
     "last_ai_message": "",
     "recorder_key": 0,

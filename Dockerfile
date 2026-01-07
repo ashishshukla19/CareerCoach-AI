@@ -5,11 +5,11 @@ FROM python:3.11-slim
 WORKDIR /code
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y libpq-dev gcc ffmpeg && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y libpq-dev gcc ffmpeg curl && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --default-timeout=100 -r requirements.txt
 
 # Copy the rest of the application code
 COPY . /code

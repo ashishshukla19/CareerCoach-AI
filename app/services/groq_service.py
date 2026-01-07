@@ -45,6 +45,7 @@ class GroqService:
             persona = self.get_persona(mode, difficulty)
             messages = [{"role": "system", "content": persona}]
             
+            # Add conversation history for contextual follow-up
             for msg in history:
                 role = "user" if msg["role"] == "user" else "assistant"
                 messages.append({"role": role, "content": msg["content"]})
@@ -55,7 +56,7 @@ class GroqService:
                 model=self.model_id,
                 messages=messages,
                 max_tokens=200,
-                temperature=0.7
+                temperature=0.85
             )
             
             ai_response = completion.choices[0].message.content
@@ -95,7 +96,8 @@ class GroqService:
             completion = self.client.chat.completions.create(
                 model=self.model_id,
                 messages=messages,
-                max_tokens=200
+                max_tokens=200,
+                temperature=0.85  # Consistent with audio-based responses
             )
             return completion.choices[0].message.content
         except Exception as e:
