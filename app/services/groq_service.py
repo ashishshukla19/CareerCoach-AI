@@ -14,23 +14,25 @@ class GroqService:
         self.model_id = settings.LLM_MODEL
         self.stt_model = settings.STT_MODEL
     
-    def get_persona(self, mode: str, difficulty: int = 5) -> str:
-        """Get the appropriate AI persona based on interview mode and difficulty."""
+    def get_persona(self, mode: str, difficulty: int = 5, cv_summary: str = "") -> str:
+        """Get the appropriate AI persona based on interview mode, difficulty, and optional CV."""
         if mode == InterviewMode.HR:
-            return get_hr_persona(difficulty)
-        return get_technical_persona(difficulty)
+            return get_hr_persona(difficulty, cv_summary)
+        return get_technical_persona(difficulty, cv_summary)
 
     async def get_response_from_audio(
         self, 
         audio_bytes, 
         mode: str = InterviewMode.TECHNICAL,
         difficulty: int = 5,
-        history: List[Dict] = []
+        history: List[Dict] = [],
+        cv_summary: str = ""
     ):
         """
         Transcribes audio using Whisper and generates an AI response.
-        Uses mode and difficulty-specific persona.
+        Uses mode, difficulty-specific persona, and optional CV content.
         """
+
         try:
             # 1. Transcription using Whisper on Groq
             transcription = self.client.audio.transcriptions.create(
@@ -41,8 +43,9 @@ class GroqService:
             
             candidate_text = transcription
             
-            # 2. Generate LLM Response with difficulty-adjusted persona
-            persona = self.get_persona(mode, difficulty)
+            # 2. Generate LLM Response with difficulty-adjusted persona and optional CV
+            persona = self.get_persona(mode, difficulty, cv_summary)
+
             messages = [{"role": "system", "content": persona}]
             
             # Add conversation history for contextual follow-up

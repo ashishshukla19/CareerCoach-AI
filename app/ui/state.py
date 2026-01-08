@@ -18,7 +18,9 @@ DEFAULTS = {
     "session_id": None,
     "turn_number": 0,
     "turn_analytics": [],  # List of analytics per turn
+    "cv_content": "",  # Parsed CV text for personalized interviews
 }
+
 
 def init_state():
     """Initialize all session state variables with defaults."""
@@ -39,7 +41,7 @@ def reset_state():
     reset_keys = [
         "messages", "interview_active", "interview_mode", "mode_selected",
         "review_data", "last_ai_message", "turn_number", "turn_analytics",
-        "difficulty_level"
+        "difficulty_level", "cv_content"
     ]
     for key in reset_keys:
         st.session_state[key] = DEFAULTS[key]

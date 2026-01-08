@@ -114,8 +114,47 @@ def render_mode_selection():
     """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
     
+    # Optional CV Upload Section
+    st.markdown("### 📄 Upload Your CV (Optional)")
+    st.markdown("""
+    <div style="background: rgba(99, 102, 241, 0.1); border: 1px dashed rgba(99, 102, 241, 0.4); 
+                border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 20px;">
+        <p style="color: #a0aec0; margin-bottom: 10px;">
+            Upload your resume for a <strong>personalized interview</strong>. 
+            Questions will be based on your experience, projects, and skills.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    uploaded_cv = st.file_uploader(
+        "Upload CV (PDF only)", 
+        type=["pdf"], 
+        key="cv_uploader",
+        label_visibility="collapsed"
+    )
+    
+    if uploaded_cv is not None:
+        # Parse the CV
+        from app.services.cv_parser import parse_cv, summarize_cv_for_prompt
+        cv_bytes = uploaded_cv.read()
+        cv_text = parse_cv(cv_bytes)
+        
+        if cv_text:
+            cv_summary = summarize_cv_for_prompt(cv_text)
+            st.session_state.cv_content = cv_summary
+            st.success(f"✅ CV uploaded successfully! ({len(cv_text)} characters extracted)")
+            
+            with st.expander("📋 Preview extracted CV content"):
+                st.text(cv_text[:1500] + ("..." if len(cv_text) > 1500 else ""))
+        else:
+            st.warning("⚠️ Could not extract text from the PDF. Try a different file or proceed without CV.")
+            st.session_state.cv_content = ""
+    else:
+        st.session_state.cv_content = ""
+    
     # Mode Selection Cards
     st.markdown("### Choose Interview Type")
+
     
     col1, col2 = st.columns(2)
     
@@ -294,17 +333,23 @@ def render_interview_page():
     # User Recording Section
     st.markdown("### 🎤 Your Response")
     
+    # Helpful hint about microphone permissions
+    st.caption("💡 If the button doesn't respond, check your browser's microphone permissions (click the 🔒 icon in the address bar).")
+    
     audio = mic_recorder(
         start_prompt="🎙️ Start Recording",
         stop_prompt="⏹️ Submit Answer",
+        just_once=True,  # Reset after each recording for reliability
+        format="webm",   # Explicit format for Whisper API compatibility
         key=f"mic_{st.session_state.recorder_key}",
         use_container_width=True
     )
 
-    if audio:
+    if audio and audio.get('bytes'):
         with st.spinner("🔄 Analyzing your response..."):
             asyncio.run(process_audio_turn(audio['bytes']))
         st.rerun()
+
 
     # Live Analytics (if available)
     if st.session_state.get("turn_analytics"):

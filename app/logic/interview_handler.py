@@ -107,6 +107,7 @@ async def process_audio_turn(audio_bytes: bytes):
     session_id = st.session_state.session_id
     mode = st.session_state.get("interview_mode", InterviewMode.TECHNICAL)
     difficulty = st.session_state.get("difficulty_level", 5)
+    cv_content = st.session_state.get("cv_content", "")
 
     # 1. Save and Repair User Audio
     storage.save_user_audio(audio_bytes, session_id, turn_num)
@@ -114,13 +115,15 @@ async def process_audio_turn(audio_bytes: bytes):
     # Estimate audio duration (rough: ~16KB per second for webm)
     estimated_duration = len(audio_bytes) / 16000
     
-    # 2. Get AI Thinking (STT + LLM) with mode and difficulty
+    # 2. Get AI Thinking (STT + LLM) with mode, difficulty, and optional CV
     result = await groq.get_response_from_audio(
         audio_bytes,
         mode=mode,
         difficulty=difficulty,
-        history=st.session_state.messages
+        history=st.session_state.messages,
+        cv_summary=cv_content
     )
+
     
     candidate_text = result['candidate_transcription']
     ai_reply = result['interviewer_response']

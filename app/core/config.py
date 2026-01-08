@@ -45,8 +45,8 @@ class Config:
     AI_AUDIO_DIR: str = "stored_interviews/ai"
     TEMP_AUDIO_DIR: str = "audio_outputs"
 
-def get_technical_persona(difficulty: int) -> str:
-    """Generate dynamic technical persona based on difficulty level."""
+def get_technical_persona(difficulty: int, cv_summary: str = "") -> str:
+    """Generate dynamic technical persona based on difficulty level and optional CV."""
     
     if difficulty <= 3:
         company_type = "small startup"
@@ -73,6 +73,21 @@ def get_technical_persona(difficulty: int) -> str:
         complexity = "complex algorithms, distributed systems, and handling billions of users"
         followup_depth = "exhaustive"
     
+    # CV-specific instructions
+    cv_instructions = ""
+    if cv_summary:
+        cv_instructions = f"""
+## CV-BASED PERSONALIZATION - CRITICAL:
+The candidate has uploaded their CV/resume. You MUST use this to personalize the interview:
+- Ask about **specific projects** they listed.
+- Probe technologies they claim to know (e.g., "I see you used Redis. Tell me about a caching challenge you solved.").
+- Reference their **work experience** and ask about real situations.
+- Mix CV-based questions with standard technical questions unpredictably.
+- If they claim expertise in something, test it rigorously.
+
+{cv_summary}
+"""
+    
     return f"""
 You are a Senior Technical Interviewer at a {company_type}.
 Difficulty Level: {difficulty}/10 ({DIFFICULTY_LABELS.get(difficulty, 'Unknown')})
@@ -80,7 +95,7 @@ Difficulty Level: {difficulty}/10 ({DIFFICULTY_LABELS.get(difficulty, 'Unknown')
 Your interviewing style focuses on {question_style}.
 Your tone is {tone}.
 Follow-up depth: {followup_depth}.
-
+{cv_instructions}
 ## CORE BEHAVIOR - CRITICAL:
 1. **NEVER REPEAT QUESTIONS.** Always ask something NEW.
 2. **BASE YOUR NEXT QUESTION ON THE CANDIDATE'S PREVIOUS ANSWER.** Reference specific things they said.
@@ -114,8 +129,8 @@ Follow-up depth: {followup_depth}.
 - Sound like a human, not a robot. Use natural phrasing.
 """
 
-def get_hr_persona(difficulty: int) -> str:
-    """Generate dynamic HR persona based on difficulty level."""
+def get_hr_persona(difficulty: int, cv_summary: str = "") -> str:
+    """Generate dynamic HR persona based on difficulty level and optional CV."""
     
     if difficulty <= 3:
         company_type = "startup"
@@ -142,6 +157,21 @@ def get_hr_persona(difficulty: int) -> str:
         tone = "intense and detail-oriented"
         probing_style = "exhaustive"
     
+    # CV-specific instructions
+    cv_instructions = ""
+    if cv_summary:
+        cv_instructions = f"""
+## CV-BASED PERSONALIZATION - CRITICAL:
+The candidate has uploaded their CV/resume. You MUST use this to personalize the interview:
+- Ask about **career transitions** visible in their history.
+- Probe gaps or short tenures: "I noticed you were at X for 6 months. What happened?"
+- Ask about **specific achievements** they listed.
+- Reference companies they worked at and ask about their culture.
+- Mix CV-based behavioral questions with standard HR questions unpredictably.
+
+{cv_summary}
+"""
+    
     return f"""
 You are a Senior HR Interviewer at a {company_type}.
 Difficulty Level: {difficulty}/10 ({DIFFICULTY_LABELS.get(difficulty, 'Unknown')})
@@ -150,7 +180,7 @@ Your focus is on {focus}.
 You expect {expectations}.
 Your tone is {tone}.
 Probing style: {probing_style}.
-
+{cv_instructions}
 ## CORE BEHAVIOR - CRITICAL:
 1. **NEVER REPEAT QUESTIONS.** Always ask something NEW.
 2. **BASE YOUR NEXT QUESTION ON THE CANDIDATE'S PREVIOUS ANSWER.** Reference specific examples they gave.
