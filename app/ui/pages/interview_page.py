@@ -327,28 +327,50 @@ def render_interview_page():
     else:
         audio_path = f"stored_interviews/ai/session_{session_id}_turn_{turn_num}_ai.mp3"
     
-    if os.path.exists(audio_path):
+    # Only show audio player if user is NOT ready to record yet
+    # This prevents audio playback from interfering with mic access
+    if os.path.exists(audio_path) and not st.session_state.get("ready_to_record", False):
         st.audio(audio_path, autoplay=True)
+        st.info("🔊 Listen to the AI's question above, then click the button below when you're ready to respond.")
 
     # User Recording Section
     st.markdown("### 🎤 Your Response")
     
-    # Helpful hint about microphone permissions
-    st.caption("💡 If the button doesn't respond, check your browser's microphone permissions (click the 🔒 icon in the address bar).")
-    
-    audio = mic_recorder(
-        start_prompt="🎙️ Start Recording",
-        stop_prompt="⏹️ Submit Answer",
-        just_once=True,  # Reset after each recording for reliability
-        format="webm",   # Explicit format for Whisper API compatibility
-        key=f"mic_{st.session_state.recorder_key}",
-        use_container_width=True
-    )
+    # Two-step flow to avoid audio/mic conflicts
+    if not st.session_state.get("ready_to_record", False):
+        # Step 1: User clicks "Ready to Respond" after hearing AI
+        st.markdown("""
+        <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); 
+                    border-radius: 12px; padding: 20px; text-align: center; margin: 15px 0;">
+            <p style="color: #a0aec0; margin-bottom: 10px; font-size: 0.95rem;">
+                ⏸️ Finished listening? Click below to enable your microphone.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("✅ I'm Ready to Respond", key="ready_btn", use_container_width=True, type="primary"):
+            st.session_state.ready_to_record = True
+            st.session_state.recorder_key += 1  # Reset recorder for fresh state
+            st.rerun()
+    else:
+        # Step 2: Show microphone recorder
+        st.caption("💡 If the button doesn't respond, check your browser's microphone permissions (click the 🔒 icon in the address bar).")
+        
+        audio = mic_recorder(
+            start_prompt="🎙️ Start Recording",
+            stop_prompt="⏹️ Submit Answer",
+            just_once=True,  # Reset after each recording for reliability
+            format="webm",   # Explicit format for Whisper API compatibility
+            key=f"mic_{st.session_state.recorder_key}",
+            use_container_width=True
+        )
 
-    if audio and audio.get('bytes'):
-        with st.spinner("🔄 Analyzing your response..."):
-            asyncio.run(process_audio_turn(audio['bytes']))
-        st.rerun()
+        if audio and audio.get('bytes'):
+            # Reset ready_to_record for next turn
+            st.session_state.ready_to_record = False
+            with st.spinner("🔄 Analyzing your response..."):
+                asyncio.run(process_audio_turn(audio['bytes']))
+            st.rerun()
 
 
     # Live Analytics (if available)

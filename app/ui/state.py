@@ -19,6 +19,14 @@ DEFAULTS = {
     "turn_number": 0,
     "turn_analytics": [],  # List of analytics per turn
     "cv_content": "",  # Parsed CV text for personalized interviews
+    "ready_to_record": False,  # Whether user is ready to record (after AI finishes speaking)
+    # Mind Exercise state
+    "show_mind_gym": False,  # Whether to show Mind Gym page
+    "mind_exercise_active": False,  # Whether an exercise session is in progress
+    "mind_exercise_questions": [],  # Current session questions
+    "mind_exercise_answers": [],  # User's answers for current session
+    "current_question_index": 0,  # Current question being answered
+    "question_start_time": None,  # When current question was started
 }
 
 
@@ -41,7 +49,7 @@ def reset_state():
     reset_keys = [
         "messages", "interview_active", "interview_mode", "mode_selected",
         "review_data", "last_ai_message", "turn_number", "turn_analytics",
-        "difficulty_level", "cv_content"
+        "difficulty_level", "cv_content", "ready_to_record"
     ]
     for key in reset_keys:
         st.session_state[key] = DEFAULTS[key]

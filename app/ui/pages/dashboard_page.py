@@ -79,6 +79,70 @@ def render_dashboard_page(review_data: dict, interview_mode: str = None) -> bool
         font-size: 2rem;
         font-weight: 700;
     }
+    .exercise-card {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+        border: 1px solid rgba(99, 102, 241, 0.25);
+        border-radius: 16px;
+        padding: 20px;
+        margin: 12px 0;
+        transition: all 0.3s ease;
+    }
+    .exercise-card:hover {
+        border-color: rgba(99, 102, 241, 0.5);
+        transform: translateY(-2px);
+    }
+    .exercise-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    .exercise-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+    }
+    .exercise-icon.speaking { background: rgba(59, 130, 246, 0.2); }
+    .exercise-icon.cognitive { background: rgba(168, 85, 247, 0.2); }
+    .exercise-icon.confidence { background: rgba(245, 158, 11, 0.2); }
+    .exercise-icon.technical { background: rgba(16, 185, 129, 0.2); }
+    .exercise-icon.behavioral { background: rgba(236, 72, 153, 0.2); }
+    .exercise-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e2e8f0;
+    }
+    .exercise-duration {
+        font-size: 0.8rem;
+        color: #667eea;
+        background: rgba(99, 102, 241, 0.15);
+        padding: 4px 10px;
+        border-radius: 20px;
+        margin-left: auto;
+    }
+    .exercise-desc {
+        color: #cbd5e0;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 10px;
+    }
+    .exercise-science {
+        font-size: 0.85rem;
+        color: #a0aec0;
+        font-style: italic;
+        padding: 8px 12px;
+        background: rgba(0,0,0,0.2);
+        border-radius: 8px;
+    }
+    .exercise-target {
+        font-size: 0.75rem;
+        color: #ef4444;
+        margin-top: 8px;
+    }
     </style>
     """, unsafe_allow_html=True)
     
@@ -295,6 +359,46 @@ def render_dashboard_page(review_data: dict, interview_mode: str = None) -> bool
         st.markdown("#### ⚠️ Areas for Improvement")
         for w in review_data.get('weaknesses', []):
             st.markdown(f'<div class="weakness-item">{w}</div>', unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Improvement Exercises Section
+    exercises = review_data.get('improvement_exercises', [])
+    if exercises:
+        st.markdown("### 🏋️ Personalized Improvement Exercises")
+        st.markdown("<p style='color: #a0aec0; margin-bottom: 20px;'>Evidence-based exercises tailored to your interview performance</p>", unsafe_allow_html=True)
+        
+        # Category icons mapping
+        category_icons = {
+            'speaking': '🗣️',
+            'cognitive': '🧠',
+            'confidence': '💪',
+            'technical': '💻',
+            'behavioral': '🤝'
+        }
+        
+        # Display exercises in 2 columns
+        col1, col2 = st.columns(2)
+        
+        for idx, exercise in enumerate(exercises):
+            col = col1 if idx % 2 == 0 else col2
+            
+            category = exercise.get('category', 'cognitive').lower()
+            icon = category_icons.get(category, '📝')
+            
+            with col:
+                st.markdown(f'''
+                <div class="exercise-card">
+                    <div class="exercise-header">
+                        <div class="exercise-icon {category}">{icon}</div>
+                        <div class="exercise-name">{exercise.get('name', 'Exercise')}</div>
+                        <div class="exercise-duration">⏱️ {exercise.get('duration', '10 min')}</div>
+                    </div>
+                    <div class="exercise-desc">{exercise.get('description', '')}</div>
+                    <div class="exercise-science">🔬 {exercise.get('psychology_basis', 'Based on research')}</div>
+                    <div class="exercise-target">🎯 Targets: {exercise.get('target_weakness', 'General improvement')}</div>
+                </div>
+                ''', unsafe_allow_html=True)
     
     st.markdown("<br><br>", unsafe_allow_html=True)
     

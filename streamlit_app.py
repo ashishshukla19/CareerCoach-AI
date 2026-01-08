@@ -1,7 +1,7 @@
 """
 AI Interview Coach - Main Entry Point.
 This is a thin router that initializes the app and routes to the correct page.
-Supports Technical and HR interview modes.
+Supports Technical and HR interview modes, plus Mind Gym cognitive training.
 """
 import streamlit as st
 import asyncio
@@ -14,6 +14,7 @@ from app.ui.state import init_state, reset_state, set_interview_mode
 from app.ui.components import render_header, render_sidebar_controls, render_replay_section
 from app.ui.pages.interview_page import render_interview_page, render_welcome_page, render_mode_selection
 from app.ui.pages.dashboard_page import render_dashboard_page
+from app.ui.pages.mind_exercise_page import render_mind_exercise_page
 from app.logic.interview_handler import (
     start_new_interview, 
     end_interview_and_review, 
@@ -52,13 +53,27 @@ elif action and action.startswith("mode_"):
     start_new_interview(mode=mode)
     st.rerun()
 
+# --- MIND GYM SIDEBAR OPTION ---
+with st.sidebar:
+    st.markdown("---")
+    st.markdown("### 🧩 Mind Training")
+    if st.button("🧠 Mind Gym", use_container_width=True, 
+                 help="Sharpen your cognitive skills with puzzles and riddles"):
+        st.session_state.show_mind_gym = True
+        st.session_state.interview_active = False
+        st.session_state.review_data = None
+        st.rerun()
+
 # --- REPLAY SIDEBAR ---
 if st.session_state.session_id:
     audio_files = get_replay_audio_files(st.session_state.session_id)
     render_replay_section(st.session_state.session_id, audio_files)
 
 # --- PAGE ROUTING ---
-if st.session_state.review_data:
+if st.session_state.get("show_mind_gym", False):
+    # Mind Gym Page
+    render_mind_exercise_page()
+elif st.session_state.review_data:
     # Dashboard Page
     if render_dashboard_page(st.session_state.review_data, st.session_state.get("interview_mode")):
         st.session_state.review_data = None
