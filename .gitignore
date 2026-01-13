@@ -24,12 +24,13 @@ stored_interviews/
 # RAG Knowledge Base (persistent data)
 rag_data/
 company_knowledge.json
+chroma_db/
 
 # Database
 *.db
 *.sqlite3
 
-# IDE / Editor
+# IDE / Editor.
 .vscode/
 .idea/
 *.swp
