@@ -26,11 +26,12 @@ class GroqService:
         mode: str = InterviewMode.TECHNICAL,
         difficulty: int = 5,
         history: List[Dict] = [],
-        cv_summary: str = ""
+        cv_summary: str = "",
+        company_context: str = ""
     ):
         """
         Transcribes audio using Whisper and generates an AI response.
-        Uses mode, difficulty-specific persona, and optional CV content.
+        Uses mode, difficulty-specific persona, optional CV, and RAG company context.
         """
 
         try:
@@ -43,12 +44,17 @@ class GroqService:
             
             candidate_text = transcription
             
-            # 2. Generate LLM Response with difficulty-adjusted persona and optional CV
+            # 2. Generate LLM Response with persona and contexts
             persona = self.get_persona(mode, difficulty, cv_summary)
+            
+            # Inject company context if available
+            if company_context:
+                logger.info(f"RAG CONTEXT INJECTED: {len(company_context)} chars into prompt")
+                persona += f"\n\n## COMPANY RESEARCH CONTEXT (CRITICAL):\n{company_context}\n\nUse this information to ask highly specific and tailored questions about how the candidate fits this company."
 
             messages = [{"role": "system", "content": persona}]
             
-            # Add conversation history for contextual follow-up
+            # Add conversation history
             for msg in history:
                 role = "user" if msg["role"] == "user" else "assistant"
                 messages.append({"role": role, "content": msg["content"]})

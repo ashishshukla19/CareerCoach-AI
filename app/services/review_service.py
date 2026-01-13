@@ -98,6 +98,16 @@ class ReviewService:
             - 'psychology_basis': Brief explanation of WHY this works based on cognitive science or psychology research
             - 'target_weakness': Which specific weakness this addresses
             
+        8. 'question_breakdown': A list analyzing EACH question-answer pair from the transcript. For each exchange, provide:
+            - 'question': The interviewer's question (shortened if too long)
+            - 'your_answer_summary': Brief summary of the candidate's actual answer (1-2 sentences)
+            - 'score': Score for this specific answer (0-10)
+            - 'ideal_answer': What an EXCELLENT answer would have looked like (2-3 sentences, specific and actionable)
+            - 'improvement_tip': One specific tip to improve this answer
+            
+        IMPORTANT: The question_breakdown should cover ALL question-answer exchanges in the transcript.
+        The ideal_answer should be specific, professional, and demonstrate what a top candidate would say.
+            
         IMPORTANT: The exercises should be proven techniques from psychology, communication science, or professional development. Examples:
         - For filler words: "Pause Practice" - deliberately pausing instead of filling silence (based on speech pathology research)
         - For confidence: "Power Posing" - expansive body postures before interviews (based on embodied cognition)
@@ -132,5 +142,6 @@ class ReviewService:
                 "feedback": "Analysis failed.",
                 "metrics": {},
                 "recommendations": [],
-                "improvement_exercises": []
+                "improvement_exercises": [],
+                "question_breakdown": []
             }

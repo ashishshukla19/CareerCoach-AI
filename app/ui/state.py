@@ -27,6 +27,8 @@ DEFAULTS = {
     "mind_exercise_answers": [],  # User's answers for current session
     "current_question_index": 0,  # Current question being answered
     "question_start_time": None,  # When current question was started
+    "show_company_docs": False,  # Whether to show Company Research page
+    "processed_files": set(),  # Track uploaded files to prevent duplicates
 }
 
 
@@ -49,10 +51,11 @@ def reset_state():
     reset_keys = [
         "messages", "interview_active", "interview_mode", "mode_selected",
         "review_data", "last_ai_message", "turn_number", "turn_analytics",
-        "difficulty_level", "cv_content", "ready_to_record"
+        "difficulty_level", "cv_content", "ready_to_record",
+        "show_company_docs", "show_mind_gym"  # Clear page navigation flags
     ]
     for key in reset_keys:
-        st.session_state[key] = DEFAULTS[key]
+        st.session_state[key] = DEFAULTS.get(key, False)
     st.session_state["recorder_key"] += 1
 
 def set_interview_mode(mode: str):

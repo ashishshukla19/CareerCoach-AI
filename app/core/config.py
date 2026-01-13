@@ -45,6 +45,12 @@ class Config:
     AI_AUDIO_DIR: str = "stored_interviews/ai"
     TEMP_AUDIO_DIR: str = "audio_outputs"
 
+    # RAG Settings
+    RAG_CHUNK_SIZE: int = 500
+    RAG_CHUNK_OVERLAP: int = 50
+    RAG_TOP_K: int = 3
+    CHROMA_PERSIST_DIR: str = "chroma_db"
+
 def get_technical_persona(difficulty: int, cv_summary: str = "") -> str:
     """Generate dynamic technical persona based on difficulty level and optional CV."""
     

@@ -362,6 +362,60 @@ def render_dashboard_page(review_data: dict, interview_mode: str = None) -> bool
     
     st.markdown("<br>", unsafe_allow_html=True)
     
+    # Question Breakdown Section - Show Your Answer vs Ideal Answer
+    question_breakdown = review_data.get('question_breakdown', [])
+    if question_breakdown:
+        st.markdown("### 📝 Answer Comparison: Your Answer vs Best Answer")
+        st.markdown("<p style='color: #a0aec0; margin-bottom: 20px;'>See what an excellent answer would look like for each question</p>", unsafe_allow_html=True)
+        
+        for idx, qa in enumerate(question_breakdown, 1):
+            question = qa.get('question', 'Question')
+            your_answer = qa.get('your_answer_summary', 'Your answer')
+            ideal_answer = qa.get('ideal_answer', 'Ideal answer')
+            score = qa.get('score', 0)
+            tip = qa.get('improvement_tip', '')
+            
+            # Score color
+            if score >= 8:
+                score_color = "#10b981"
+                score_emoji = "🌟"
+            elif score >= 6:
+                score_color = "#f59e0b"
+                score_emoji = "👍"
+            else:
+                score_color = "#ef4444"
+                score_emoji = "📈"
+            
+            # Truncate question for display
+            q_display = question[:100] + "..." if len(question) > 100 else question
+            
+            # Use st.html for proper rendering
+            card_html = f'''
+<div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 16px; padding: 20px; margin: 15px 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <span style="font-size: 1.1rem; font-weight: 600; color: #667eea;">❓ Q{idx}: {q_display}</span>
+        <span style="background: {score_color}; color: white; padding: 5px 12px; border-radius: 20px; font-weight: 600;">{score_emoji} {score}/10</span>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 15px; border-radius: 0 12px 12px 0;">
+            <div style="color: #ef4444; font-weight: 600; margin-bottom: 8px;">📝 Your Answer</div>
+            <div style="color: #cbd5e0; font-size: 0.95rem; line-height: 1.5;">{your_answer}</div>
+        </div>
+        <div style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981; padding: 15px; border-radius: 0 12px 12px 0;">
+            <div style="color: #10b981; font-weight: 600; margin-bottom: 8px;">✨ Ideal Answer</div>
+            <div style="color: #cbd5e0; font-size: 0.95rem; line-height: 1.5;">{ideal_answer}</div>
+        </div>
+    </div>
+    <div style="margin-top: 12px; padding: 10px; background: rgba(99, 102, 241, 0.15); border-radius: 8px;">
+        <span style="color: #667eea; font-weight: 600;">💡 Tip:</span>
+        <span style="color: #a0aec0;"> {tip}</span>
+    </div>
+</div>
+'''
+            st.html(card_html)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
     # Improvement Exercises Section
     exercises = review_data.get('improvement_exercises', [])
     if exercises:

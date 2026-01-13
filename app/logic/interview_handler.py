@@ -36,7 +36,7 @@ def get_services():
 def start_new_interview(mode: str = InterviewMode.TECHNICAL, difficulty: int = 5):
     """
     Initialize a new interview session with the specified mode and difficulty.
-    Creates a DB record and sets up the initial AI greeting.
+    Creates a DB record and sets up the initial AI greeting (with RAG context if available).
     """
     groq, review, tts, storage, analytics = get_services()
     db = SessionLocal()
@@ -57,29 +57,63 @@ def start_new_interview(mode: str = InterviewMode.TECHNICAL, difficulty: int = 5
         
         # Generate difficulty-aware greeting
         if difficulty <= 3:
-            company_context = "a growing startup"
+            company_type = "a growing startup"
         elif difficulty <= 6:
-            company_context = "an established tech company"
+            company_type = "an established tech company"
         elif difficulty <= 8:
-            company_context = "a top tech company"
+            company_type = "a top tech company"
         else:
-            company_context = "a FAANG company"
+            company_type = "a FAANG company"
         
-        # Mode-specific greeting with difficulty context
-        if mode == InterviewMode.HR:
-            initial_msg = (
-                f"Hello! I'm your HR Interviewer from {company_context}. "
-                f"This is a {difficulty_label} level interview. "
-                "I'll be assessing your communication skills and cultural fit. "
-                "Let's start—tell me about yourself and your career journey."
-            )
+        # Check for RAG context to personalize the greeting
+        rag_context = ""
+        rag_active = False
+        try:
+            from app.services.rag_service import RAGService
+            rag_service = RAGService()
+            if rag_service.has_documents():
+                rag_active = True
+                rag_context = rag_service.get_context_for_prompt("job requirements skills qualifications")
+                logger.info(f"RAG Active: Using {rag_service.get_document_count()} knowledge nodes for interview")
+        except Exception as e:
+            logger.error(f"RAG Error in start_new_interview: {e}")
+        
+        # Store RAG status in session for UI display
+        st.session_state.rag_active = rag_active
+        
+        # Mode-specific greeting with difficulty context and RAG personalization
+        if rag_active and rag_context:
+            # Use RAG context to personalize the greeting
+            if mode == InterviewMode.HR:
+                initial_msg = (
+                    f"Hello! I'm your HR Interviewer. Based on the job requirements I've reviewed, "
+                    f"this is a {difficulty_label} level interview. "
+                    "I'll be assessing your communication skills and how well you fit this specific role. "
+                    "Let's start—tell me about yourself and why you're interested in this position."
+                )
+            else:
+                initial_msg = (
+                    f"Hello! I'm your Technical Interviewer. I've reviewed the job description for this role. "
+                    f"This is a {difficulty_label} level interview. "
+                    "I'll be evaluating your technical skills based on the specific requirements. "
+                    "To begin, tell me about a project that demonstrates your expertise relevant to this role."
+                )
         else:
-            initial_msg = (
-                f"Hello! I'm your Technical Interviewer from {company_context}. "
-                f"This is a {difficulty_label} level interview. "
-                "I'll be evaluating your problem-solving and technical skills. "
-                "To begin, tell me about your most challenging technical project."
-            )
+            # Generic greeting without RAG
+            if mode == InterviewMode.HR:
+                initial_msg = (
+                    f"Hello! I'm your HR Interviewer from {company_type}. "
+                    f"This is a {difficulty_label} level interview. "
+                    "I'll be assessing your communication skills and cultural fit. "
+                    "Let's start—tell me about yourself and your career journey."
+                )
+            else:
+                initial_msg = (
+                    f"Hello! I'm your Technical Interviewer from {company_type}. "
+                    f"This is a {difficulty_label} level interview. "
+                    "I'll be evaluating your problem-solving and technical skills. "
+                    "To begin, tell me about your most challenging technical project."
+                )
         
         st.session_state.last_ai_message = initial_msg
         st.session_state.messages.append({"role": "assistant", "content": initial_msg})
@@ -87,7 +121,7 @@ def start_new_interview(mode: str = InterviewMode.TECHNICAL, difficulty: int = 5
         
         # Generate initial voice
         asyncio.run(tts.text_to_speech(initial_msg, f"welcome_{session.id}"))
-        logger.info(f"Started new {mode} interview (difficulty {difficulty}) session: {session.id}")
+        logger.info(f"Started new {mode} interview (difficulty {difficulty}, RAG={rag_active}) session: {session.id}")
     finally:
         db.close()
 
@@ -116,12 +150,27 @@ async def process_audio_turn(audio_bytes: bytes):
     estimated_duration = len(audio_bytes) / 16000
     
     # 2. Get AI Thinking (STT + LLM) with mode, difficulty, and optional CV
+    # First, check if RAG has relevant context
+    company_context = ""
+    try:
+        from app.services.rag_service import RAGService
+        rag_service = RAGService()
+        if rag_service.has_documents():
+            # Query for context based on the current conversation topic
+            # We use the candidate's last message or current transcription as query
+            # For the first turn, we use the initial AI message topic
+            last_ai_msg = st.session_state.get("last_ai_message", "")
+            company_context = rag_service.get_context_for_prompt(last_ai_msg)
+    except Exception as e:
+        logger.error(f"RAG Context Error: {e}")
+
     result = await groq.get_response_from_audio(
         audio_bytes,
         mode=mode,
         difficulty=difficulty,
         history=st.session_state.messages,
-        cv_summary=cv_content
+        cv_summary=cv_content,
+        company_context=company_context
     )
 
     

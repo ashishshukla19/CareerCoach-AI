@@ -297,10 +297,13 @@ def render_interview_page():
     else:
         diff_color = "#ef4444"
     
-    # Header
+    # Header with RAG indicator
+    rag_active = st.session_state.get("rag_active", False)
+    rag_badge = '<span style="background: #10b981; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; margin-left: 10px;">📚 JD Active</span>' if rag_active else ''
+    
     st.markdown(f"""
         <div class="interview-header">
-            <span class="interview-title">{mode_emoji} {mode_name} Interview</span>
+            <span class="interview-title">{mode_emoji} {mode_name} Interview {rag_badge}</span>
             <span class="level-badge" style="background: {diff_color};">
                 Level {difficulty}: {difficulty_label}
             </span>

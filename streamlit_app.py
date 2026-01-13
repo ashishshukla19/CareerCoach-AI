@@ -64,13 +64,29 @@ with st.sidebar:
         st.session_state.review_data = None
         st.rerun()
 
+# --- COMPANY RESEARCH SIDEBAR OPTION ---
+with st.sidebar:
+    st.markdown("---")
+    st.markdown("### 📚 PREMUM FEATURE")
+    if st.button("🏢 Company Research", use_container_width=True, 
+                 help="Tailor your interview by uploading company docs"):
+        st.session_state.show_company_docs = True
+        st.session_state.show_mind_gym = False
+        st.session_state.interview_active = False
+        st.session_state.review_data = None
+        st.rerun()
+
 # --- REPLAY SIDEBAR ---
 if st.session_state.session_id:
     audio_files = get_replay_audio_files(st.session_state.session_id)
     render_replay_section(st.session_state.session_id, audio_files)
 
 # --- PAGE ROUTING ---
-if st.session_state.get("show_mind_gym", False):
+if st.session_state.get("show_company_docs", False):
+    # Company Docs Page
+    from app.ui.pages.company_docs_page import render_company_docs_page
+    render_company_docs_page()
+elif st.session_state.get("show_mind_gym", False):
     # Mind Gym Page
     render_mind_exercise_page()
 elif st.session_state.review_data:
